@@ -1,0 +1,302 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Job Search Results</h1>
+        <form method="GET" action="/" class="mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" name="keywords" class="form-control" placeholder="Search Job Title" value="{{ keywords }}">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="reviews" class="form-control" placeholder="Search Company Reviews" value="{{ reviews }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="datePosted" class="form-select">
+                        <option value="">Date Posted</option>
+                        <option value="anyTime" {% if date_posted == 'anyTime' %}selected{% endif %}>Any Time</option>
+                        <option value="pastMonth" {% if date_posted == 'pastMonth' %}selected{% endif %}>Past Month</option>
+                        <option value="pastWeek" {% if date_posted == 'pastWeek' %}selected{% endif %}>Past Week</option>
+                        <option value="past24Hours" {% if date_posted == 'past24Hours' %}selected{% endif %}>Past 24 Hours</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="jobType" class="form-select">
+                        <option value="">Job Type</option>
+                        <option value="fullTime" {% if job_type == 'fullTime' %}selected{% endif %}>Full Time</option>
+                        <option value="partTime" {% if job_type == 'partTime' %}selected{% endif %}>Part Time</option>
+                        <option value="contract" {% if job_type == 'contract' %}selected{% endif %}>Contract</option>
+                        <option value="internship" {% if job_type == 'internship' %}selected{% endif %}>Internship</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </div>
+        </form>
+        
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Job Title</th>
+                    <th>Company</th>
+                    <th>Location</th>
+                    <th>Post Date</th>
+                    <th>Job Type</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if jobs %}
+                {% for job in jobs %}
+                <tr>
+                    <td><a href="{{ job.url }}" target="_blank">{{ job.title }}</a></td>
+                    <td><a href="{{ job.company.url }}" target="_blank">{{ job.company.name }}</a></td>
+                    <td>{{ job.location }}</td>
+                    <td>{{ job.postDate }}</td>
+                    <td>{{ job.type }}</td>
+                    <td><a href="{{ job.url }}" target="_blank" class="btn btn-info btn-sm">View</a></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <p>No jobs found.</p>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+</html> -->
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Job Search Results</h1>
+        <form method="GET" action="/" class="mb-4" id="searchForm">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" name="keywords" class="form-control" placeholder="Search Job Title" value="{{ keywords }}">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="reviews" class="form-control" placeholder="Search Company Reviews" value="{{ reviews }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="datePosted" class="form-select">
+                        <option value="">Date Posted</option>
+                        <option value="anyTime" {% if date_posted == 'anyTime' %}selected{% endif %}>Any Time</option>
+                        <option value="pastMonth" {% if date_posted == 'pastMonth' %}selected{% endif %}>Past Month</option>
+                        <option value="pastWeek" {% if date_posted == 'pastWeek' %}selected{% endif %}>Past Week</option>
+                        <option value="past24Hours" {% if date_posted == 'past24Hours' %}selected{% endif %}>Past 24 Hours</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="jobType" class="form-select">
+                        <option value="">Job Type</option>
+                        <option value="fullTime" {% if job_type == 'fullTime' %}selected{% endif %}>Full Time</option>
+                        <option value="partTime" {% if job_type == 'partTime' %}selected{% endif %}>Part Time</option>
+                        <option value="contract" {% if job_type == 'contract' %}selected{% endif %}>Contract</option>
+                        <option value="internship" {% if job_type == 'internship' %}selected{% endif %}>Internship</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100" id="searchButton">
+                        Search
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div id="loadingSpinner" class="text-center d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Searching...</p>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Job Title</th>
+                    <th>Company</th>
+                    <th>Location</th>
+                    <th>Post Date</th>
+                    <th>Job Type</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if jobs %}
+                {% for job in jobs %}
+                <tr>
+                    <td><a href="{{ job.url }}" target="_blank">{{ job.title }}</a></td>
+                    <td><a href="{{ job.company.url }}" target="_blank">{{ job.company.name }}</a></td>
+                    <td>{{ job.location }}</td>
+                    <td>{{ job.postDate }}</td>
+                    <td>{{ job.type }}</td>
+                    <td><a href="{{ job.url }}" target="_blank" class="btn btn-info btn-sm">View</a></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <p>No jobs found.</p>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+            const searchButton = document.getElementById('searchButton');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            searchButton.textContent = 'Searching...';
+            searchButton.disabled = true;
+            searchButton.classList.add('loading');
+
+            loadingSpinner.classList.remove('d-none');
+        });
+    </script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Job Search</h1>
+        <!-- <form method="POST" action="/" class="mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" name="keywords" class="form-control" placeholder="Search Job Title" value="{{ keywords }}">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="reviews" class="form-control" placeholder="Search Company Reviews" value="{{ reviews }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="datePosted" class="form-select">
+                        <option value="">Date Posted</option>
+                        <option value="anyTime" {% if date_posted == 'anyTime' %}selected{% endif %}>Any Time</option>
+                        <option value="pastMonth" {% if date_posted == 'pastMonth' %}selected{% endif %}>Past Month</option>
+                        <option value="pastWeek" {% if date_posted == 'pastWeek' %}selected{% endif %}>Past Week</option>
+                        <option value="past24Hours" {% if date_posted == 'past24Hours' %}selected{% endif %}>Past 24 Hours</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="jobType" class="form-select">
+                        <option value="">Job Type</option>
+                        <option value="fullTime" {% if job_type == 'fullTime' %}selected{% endif %}>Full Time</option>
+                        <option value="partTime" {% if job_type == 'partTime' %}selected{% endif %}>Part Time</option>
+                        <option value="contract" {% if job_type == 'contract' %}selected{% endif %}>Contract</option>
+                        <option value="internship" {% if job_type == 'internship' %}selected{% endif %}>Internship</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </div>
+        </form> -->
+
+        <form method="GET" action="/" class="mb-4">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <input type="text" name="keywords" class="form-control" placeholder="Search Job Title" value="{{ keywords }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="jobType" class="form-select">
+                        <option value="">Job Type</option>
+                        <option value="fullTime" {% if job_type == 'fullTime' %}selected{% endif %}>Full Time</option>
+                        <option value="partTime" {% if job_type == 'partTime' %}selected{% endif %}>Part Time</option>
+                        <option value="contract" {% if job_type == 'contract' %}selected{% endif %}>Contract</option>
+                        <option value="internship" {% if job_type == 'internship' %}selected{% endif %}>Internship</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select name="datePosted" class="form-select">
+                        <option value="">Date Posted</option>
+                        <option value="anyTime" {% if date_posted == 'anyTime' %}selected{% endif %}>Any Time</option>
+                        <option value="pastMonth" {% if date_posted == 'pastMonth' %}selected{% endif %}>Past Month</option>
+                        <option value="pastWeek" {% if date_posted == 'pastWeek' %}selected{% endif %}>Past Week</option>
+                        <option value="past24Hours" {% if date_posted == 'past24Hours' %}selected{% endif %}>Past 24 Hours</option>
+                    </select>
+                </div>
+            </div>
+        
+            <div class="row mb-3">
+                <div class="col-12">
+                    <input type="text" name="reviews" class="form-control" placeholder="Search Company Reviews" value="{{ reviews }}">
+                </div>
+            </div>
+        
+            <div class="row">
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </form>
+        
+
+        {% if jobs %}
+        <h2 class="text-center">Search Results</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Job Title</th>
+                    <th>Company</th>
+                    <th>Location</th>
+                    <th>Post Date</th>
+                    <th>Job Type</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                <tr>
+                    <td><a href="{{ job.url }}" target="_blank">{{ job.title }}</a></td>
+                    <td><a href="{{ job.company.url }}" target="_blank">{{ job.company.name }}</a></td>
+                    <td>{{ job.location }}</td>
+                    <td>{{ job.postDate }}</td>
+                    <td>{{ job.type }}</td>
+                    <td><a href="{{ job.url }}" target="_blank" class="btn btn-info btn-sm">View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-center">No jobs to display.</p>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+
